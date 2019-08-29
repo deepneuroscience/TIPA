@@ -1,5 +1,6 @@
 # TIPA opensource toolkit project
 TIPA: Thermal Imaging-based Physiological and Affective computing
+
 Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer Science, University College London (UCL)
 
 
@@ -12,6 +13,7 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
 
 
 2. Install basic libraries on the Conda console.
+
     conda install -c conda-forge opencv
     conda install scikit-learn
     pip install --upgrade numpy
@@ -20,16 +22,23 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
 
     * For your information
         print(python_version()) 
+        
         3.7.3
+        
         print(np.version.version)
+        
         1.16.4
+        
         print(cv2.__version__)
+        
         3.4.2
 
 
 3. Run "TIPA_basic_run.ipynb" on the Jupyter notebook 
     You can find a basic instruction on the notebook.
     
+
+
     
     
 ## Key References
