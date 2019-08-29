@@ -3,15 +3,20 @@ TIPA: Thermal Imaging-based Physiological and Affective computing
 Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer Science, University College London (UCL)
 
 
+
 ## Brief guideline
+
 1. Download Anaconda (latest version) - Python 3.7 (recommended)
+
     https://www.anaconda.com/distribution/
+
 
 2. Install basic libraries on the Conda console.
     conda install -c conda-forge opencv
     conda install scikit-learn
     pip install --upgrade numpy
     pip install --upgrade matplotlib
+
 
     * For your information
         print(python_version()) 
@@ -21,8 +26,10 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
         print(cv2.__version__)
         3.4.2
 
+
 3. Run "TIPA_basic_run.ipynb" on the Jupyter notebook 
     You can find a basic instruction on the notebook.
+    
     
     
 ## Key References
