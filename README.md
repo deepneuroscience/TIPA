@@ -41,7 +41,7 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
         
         scipy (1.3.1)
 
-3. Run "TIPA_basic_run.ipynb" on the Jupyter notebook 
+3. Run "<a href="https://github.com/deepneuroscience/TIPA/blob/master/TIPA_basic_run.ipynb">TIPA_basic_run.ipynb</a>" on the Jupyter notebook 
 
     You can find a basic instruction on the notebook.
     
