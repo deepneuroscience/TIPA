@@ -21,6 +21,8 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
     pip install --upgrade numpy
     
     pip install --upgrade matplotlib
+    
+    conda install -c anaconda scipy
 
 
     * For your information
@@ -36,7 +38,8 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
         print(cv2.__version__)
         
         3.4.2
-
+        
+        scipy (1.3.1)
 
 3. Run "TIPA_basic_run.ipynb" on the Jupyter notebook 
 
