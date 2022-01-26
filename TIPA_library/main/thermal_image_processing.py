@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import cv2
+from packaging import version
     
 ''' Optimal Quantization: Optimal Quantization technique adaptively constructs a color mapping of absolute temperature to improve segmentation, classification and tracking
 
@@ -110,23 +111,41 @@ Reference [3]: Cho, Y., Bianchi-Berthouze, N., Oliveira, M., Holloway, C., & Jul
 ## eg. ROI_seq, tracked_img=thermal_tracker(data.thermal_matrix, 'MEDIANFLOW', False)     
 def thermal_tracker(mat_3d, quantization_method='optimal', im_tracker_name = 'TLD', print_mode=False, nonfixed_ROI_size=True, img_viewer=True, min_T=28, max_T=38):
 
-    if im_tracker_name == 'TLD':
-        im_tracker = cv2.TrackerTLD_create()
-    elif im_tracker_name == 'MEDIANFLOW':
-        im_tracker = cv2.TrackerMedianFlow_create()
-    elif im_tracker_name == 'GOTURN':
-        im_tracker = cv2.TrackerGOTURN_create()
-    elif im_tracker_name == 'MOSSE':
-        im_tracker = cv2.TrackerMOSSE_create()
-    elif im_tracker_name == "CSRT":
-        im_tracker = cv2.TrackerCSRT_create()
-    elif im_tracker_name == 'BOOSTING':
-        im_tracker = cv2.TrackerBoosting_create()
-    elif im_tracker_name == 'MIL':
-        im_tracker = cv2.TrackerMIL_create()
-    elif im_tracker_name == 'KCF':
-        im_tracker = cv2.TrackerKCF_create()
+    # If using a version of openCV prior to 4.5.1, include all standard
+    # trackers
+    if version.parse(cv2.__version__) < version.parse("4.5.1"):
+        trackers = {"TLD": cv2.TrackerTLD_create,
+                    "MEDIANFLOW": cv2.TrackerMedianFlow_create,
+                    "GOTURN": cv2.TrackerGOTURN_create,
+                    "MOSSE": cv2.TrackerMOSSE_create,
+                    "CSRT": cv2.TrackerCSRT_create,
+                    "BOOSTING": cv2.TrackerBoosting_create,
+                    "MIL": cv2.TrackerMIL_create,
+                    "KCF": cv2.TrackerKCF_create}
+    # If using a more recent version of OpenCV include legacy trackers
+    else:
+        trackers = {"TLD": cv2.legacy.TrackerTLD_create,
+                    "MEDIANFLOW": cv2.legacy.TrackerMedianFlow_create,
+                    "GOTURN": cv2.TrackerGOTURN_create,
+                    "MOSSE": cv2.legacy.TrackerMOSSE_create,
+                    "CSRT": cv2.TrackerCSRT_create,
+                    "BOOSTING": cv2.legacy.TrackerBoosting_create,
+                    "MIL": cv2.TrackerMIL_create,
+                    "KCF": cv2.TrackerKCF_create}
+    # If using a version of OpenCV newer than 4.5.2 then include the
+    # DaSiamRPN tracker
+    if version.parse(cv2.__version__) > version.parse("4.5.2"):
+        trackers["DASIAMRPN"] = cv2.TrackerDaSiamRPN_create
 
+    try:
+        im_tracker = trackers[im_tracker_name]()
+    except KeyError as E:
+        print("Tracker could not be found, please check it is included in "
+              "your version of OpenCV!")
+        raise E
+    greyscale = True
+    if im_tracker_name in ["GOTURN", "BOOSTING", "DASIAMRPN"]:
+        greyscale = False
 
     temp_mat = copy.deepcopy(mat_3d[:,:,0])    
     tracked_imgs = np.zeros(mat_3d.shape,np.uint8)
@@ -138,7 +157,7 @@ def thermal_tracker(mat_3d, quantization_method='optimal', im_tracker_name = 'TL
         
         
     # ROI selection 
-    mROI = np.zeros((4, mat_3d.shape[2]))
+    mROI = np.zeros((4, mat_3d.shape[2]), dtype=int)
     mROI[:,0] = cv2.selectROI('ROI selection', tracked_imgs[:,:,0], False)
     # mROI.shape
     cv2.destroyWindow('ROI selection')
@@ -146,13 +165,19 @@ def thermal_tracker(mat_3d, quantization_method='optimal', im_tracker_name = 'TL
 #     cv2.namedWindow('TrackViewer')
     
     # Initialization of a tracker
-    out = im_tracker.init(tracked_imgs[:,:,0], tuple(mROI[:,0]))
+
+    if greyscale:
+        out = im_tracker.init(tracked_imgs[:,:,0], tuple(mROI[:,0]))
+    else:
+        stacked_img = np.stack((tracked_imgs[:, :, 0],) * 3, axis=-1)
+        out = im_tracker.init(stacked_img, tuple(mROI[:, 0]))
 
 
     for i in range(1,mat_3d.shape[2]):
         if np.mod(i,20)==0:
             print("frame: %d"%i)
-        temp_mat = copy.deepcopy(mat_3d[:,:,i])   
+        temp_mat = copy.deepcopy(mat_3d[:,:,i])
+        current_frame = np.zeros(tracked_imgs[:,:,0].shape)
         
         if quantization_method == 'optimal':
             current_frame = optimal_quantization(temp_mat, print_mode)
@@ -162,9 +187,18 @@ def thermal_tracker(mat_3d, quantization_method='optimal', im_tracker_name = 'TL
         
         # Updating the tracker
         if nonfixed_ROI_size:
-            result, mROI[:,i] = im_tracker.update(current_frame)
+            if greyscale:
+                result, mROI[:,i] = im_tracker.update(current_frame)
+            else:
+                stacked_img = np.stack((current_frame,) * 3, axis=-1)
+                result, mROI[:, i] = im_tracker.update(stacked_img)
         else:
-            result, bbox = im_tracker.update(current_frame)
+            if greyscale:
+                result, bbox = im_tracker.update(current_frame)
+            else:
+                stacked_img = np.stack((current_frame,) * 3, axis=-1)
+                result, bbox = im_tracker.update(stacked_img)
+                
             mROI[2,i]=mROI[2,0]
             mROI[3,i]=mROI[3,0]
             mROI[0,i]=bbox[0]+np.round(bbox[2]/2) -np.round(mROI[2,0]/2)
