@@ -22,6 +22,8 @@ Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer 
     
     pip install --upgrade matplotlib
     
+    pip install packaging
+    
     conda install -c anaconda scipy
 
 
