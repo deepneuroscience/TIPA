@@ -14,7 +14,9 @@ from packaging import version
 Reference: Cho, Y., Julier, S. J., Marquardt, N., & Bianchi-Berthouze, N. (2017). Robust tracking of respiratory rate in high-dynamic range scenes using mobile thermal imaging. Biomedical optics express, 8(10), 4480-4503.
 '''
 # output = optimal_quantization(mat, True)  
-def optimal_quantization(t2d_data, print_mode = False):
+def optimal_quantization(t2d_data_original, print_mode = False):
+
+    t2d_data= np.copy(t2d_data_original)
     
     vector_data= np.reshape(t2d_data, t2d_data.shape[0]*t2d_data.shape[1])
     min_T=np.percentile(vector_data, 2.5)  #2.5 percentile point
@@ -41,12 +43,10 @@ def optimal_quantization(t2d_data, print_mode = False):
 
     t2d_data[np.where(t2d_data < min_T)]=min_T
 
-    quantized_t_img=np.zeros((t2d_data.shape[0],t2d_data.shape[1]), np.uint8)
-    for i in range(0, t2d_data.shape[0]):
-        for j in range(0, t2d_data.shape[1]):
-            quantized_t_img[i,j]=255*((t2d_data[i,j]-min_T)/(max_T-min_T))
+    quantized_t_img=255*(t2d_data-min_T)/(max_T-min_T)
+    quantized_t_img = quantized_t_img.astype(np.uint8)
 
-    return quantized_t_img                     
+    return quantized_t_img                  
                          
 def optimal_quantization_range(t2d_data):
     
@@ -70,13 +70,6 @@ def optimal_quantization_range(t2d_data):
 
     min_T=opt_T
 
-    t2d_data[np.where(t2d_data < min_T)]=min_T
-
-    quantized_t_img=np.zeros((t2d_data.shape[0],t2d_data.shape[1]), np.uint8)
-    for i in range(0, t2d_data.shape[0]):
-        for j in range(0, t2d_data.shape[1]):
-            quantized_t_img[i,j]=255*((t2d_data[i,j]-min_T)/(max_T-min_T))
-
     return min_T,max_T     
     
 '''
@@ -87,14 +80,13 @@ def nonoptimal_quantization(t2d_data, min_T, max_T, print_mode = False):
     if print_mode:
         print("your fixed thermal range of interest is [%f, %f]"%(min_T,max_T))
 
-    quantized_t_img=np.zeros((t2d_data.shape[0],t2d_data.shape[1]), np.uint8)
+    quantized_t_img= np.copy(t2d_data)
     
-    t2d_data[np.where(t2d_data > max_T)]=max_T
-    t2d_data[np.where(t2d_data < min_T)]=min_T
-    
-    for i in range(0, t2d_data.shape[0]):
-        for j in range(0, t2d_data.shape[1]):
-            quantized_t_img[i,j]=255*(t2d_data[i,j]-min_T)/(max_T-min_T)
+    quantized_t_img[np.where(quantized_t_img > max_T)]=max_T
+    quantized_t_img[np.where(quantized_t_img < min_T)]=min_T
+
+    quantized_t_img=255*(quantized_t_img-min_T)/(max_T-min_T)
+    quantized_t_img = quantized_t_img.astype(np.uint8)
 
     return quantized_t_img    
 
