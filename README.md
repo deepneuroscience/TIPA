@@ -1,7 +1,7 @@
 # TIPA opensource toolkit project
 TIPA: Thermal Imaging-based Physiological and Affective computing
 
-Lead contributor: Dr. Youngjun Cho, Assistant Professor, Department of Computer Science, University College London (UCL)
+Lead contributor: Dr. Youngjun Cho, Department of Computer Science, University College London (UCL)
 
 
 
